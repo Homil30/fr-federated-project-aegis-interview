@@ -1,0 +1,22 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Large model files
+saved_models/
+
+# Datasets and photos
+photos/
+*.csv
+*.png
+
+# Logs
+*.log
+*.tmp
+
+# System files
+.DS_Store
+Thumbs.db
