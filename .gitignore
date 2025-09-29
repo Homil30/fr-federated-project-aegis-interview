@@ -20,3 +20,4 @@ photos/
 # System files
 .DS_Store
 Thumbs.db
+Get-ChildItem C:\ -Recurse
