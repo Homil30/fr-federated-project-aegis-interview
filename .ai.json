@@ -1,0 +1,6 @@
+{
+  "entrypoint": "run_complete_evaluation.py",
+  "dependencies": "requirements.txt",
+  "dataset": "data/",
+  "outputs": "EVALUATION_RESULTS/"
+}
