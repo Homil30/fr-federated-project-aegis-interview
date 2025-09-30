@@ -1,0 +1,26 @@
+{
+  "C:\\Users\\Asus\\Desktop\\fr-federated-project\\global_model.pt": {
+    "status": "success",
+    "inference": "pass",
+    "size_mb": 42.96174144744873,
+    "parameters": 108514818
+  },
+  "C:\\Users\\Asus\\Desktop\\fr-federated-project\\saved_models\\global_model_round3.pt": {
+    "status": "success",
+    "inference": "pass",
+    "size_mb": 42.96225547790527,
+    "parameters": 108514818
+  },
+  "C:\\Users\\Asus\\Desktop\\fr-federated-project\\saved_models\\global_model_round2.pt": {
+    "status": "success",
+    "inference": "pass",
+    "size_mb": 42.96225547790527,
+    "parameters": 108514818
+  },
+  "C:\\Users\\Asus\\Desktop\\fr-federated-project\\saved_models\\global_model_round1.pt": {
+    "status": "success",
+    "inference": "pass",
+    "size_mb": 42.96225547790527,
+    "parameters": 108514818
+  }
+}

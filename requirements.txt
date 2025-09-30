@@ -1,7 +1,31 @@
-flwr==1.22.0
+# Core Deep Learning (CPU-only, compatible versions)
 torch==2.2.2
 torchvision==0.17.2
 numpy==1.26.4
-scikit-learn==1.1.3
 pillow==10.2.0
+scikit-learn==1.3.2
+scipy
+
+# Federated Learning Framework
+flwr==1.8.0
+
+# Facial Recognition / Image Processing
 facenet-pytorch==2.6.0
+opencv-python==4.9.0.80
+mtcnn==0.1.1
+
+# Explainable AI (XAI) - CORRECTED VERSIONS
+grad-cam==1.5.4
+lime==0.2.0.1
+shap==0.44.0
+
+# Utilities and Logging
+tqdm==4.66.1
+pyyaml==6.0.1
+matplotlib==3.8.2
+seaborn==0.13.1
+pandas==2.1.4
+
+# Web Interface (Optional - for demo)
+flask==3.0.0
+waitress==2.1.2

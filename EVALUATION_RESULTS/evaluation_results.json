@@ -1,0 +1,6 @@
+{
+  "fairness": {
+    "Female_Asian": {
+      "accuracy": 1.0,
+      "total_samples": 50,
+      "correct_predictions": 
