@@ -1,0 +1,17 @@
+{
+  "fairness": {
+    "Male": 92,
+    "Female": 89,
+    "Other": 85
+  },
+  "robustness": {
+    "Clean": 90,
+    "FGSM": 70,
+    "PGD": 60,
+    "DeepFool": 55
+  },
+  "performance": {
+    "Accuracy": 88,
+    "Error": 12
+  }
+}

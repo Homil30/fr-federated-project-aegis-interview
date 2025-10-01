@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis: Engineering Trust in Facial Recognition</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- ✅ Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body id="home">
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <img src="https://via.placeholder.com/150x50/0A0A0A/FFFFFF?text=AEGIS+LOGO" alt="Aegis Logo">
+            </a>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#research">Research</a></li>
+                    <li><a href="#demo-section">Demo</a></li>
+                    <li><a href="#evaluation-section">Evaluation</a></li>
+                    <li><a href="#blog">Blog</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section homepage-hero">
+            <div class="hero-overlay homepage-hero-overlay">
+                <div class="container hero-content">
+                    <h1 class="hero-title">Aegis: Engineering Trust in Facial Recognition.</h1>
+                    <p class="hero-description">
+                        Aegis is a pioneering framework that builds fairness, security, and transparency into facial recognition technology, ensuring ethical and responsible deployment for a safer future.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#whitepaper" class="button button-primary">Read The Whitepaper</a>
+                        <a href="#demo-section" class="button button-secondary">View The Demo</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Features Section -->
+        <section id="how-it-works" class="features-section">
+            <div class="container">
+                <h2>Key Features</h2>
+                <div class="features-grid">
+                    <article class="feature-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Robust Performance</h3>
+                        <p>Our algorithms are designed for high accuracy across diverse demographics and challenging conditions, minimizing bias and maximizing reliability.</p>
+                    </article>
+                    <article class="feature-card">
+                        <i class="fas fa-network-wired"></i>
+                        <h3>Federated Learning</h3>
+                        <p>Aegis leverages federated learning to train models on decentralized data, ensuring privacy by keeping sensitive information on-device.</p>
+                    </article>
+                    <article class="feature-card">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>Explainable AI</h3>
+                        <p>We provide clear insights into model decisions, enhancing transparency and building trust through interpretable outcomes.</p>
+                    </article>
+                    <article class="feature-card">
+                        <i class="fas fa-lock"></i>
+                        <h3>Secure by Design</h3>
+                        <p>Built with privacy and security at its core, Aegis employs advanced cryptographic techniques to protect data integrity.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Demo Section -->
+        <section id="demo-section" class="demo-section">
+            <div class="container demo-container">
+                <h2>Live Demo</h2>
+                <p>Upload an image and our federated model will predict in real-time:</p>
+                <div class="upload-box">
+                    <input type="file" id="fileInput" accept="image/*">
+                    <button onclick="uploadImage()" class="button button-primary">Predict</button>
+                </div>
+                <div id="result"></div>
+            </div>
+        </section>
+
+        <!-- ✅ Evaluation Results Section -->
+        <section id="evaluation-section" class="evaluation-section">
+            <div class="container evaluation-container">
+                <h2>Model Evaluation Results</h2>
+                <p>Fairness and robustness metrics from federated training:</p>
+
+                <div class="chart-box">
+                    <h3>Fairness Across Groups</h3>
+                    <canvas id="fairnessChart"></canvas>
+                </div>
+
+                <div class="chart-box">
+                    <h3>Adversarial Robustness</h3>
+                    <canvas id="robustnessChart"></canvas>
+                </div>
+
+                <div class="chart-box">
+                    <h3>Overall Performance</h3>
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog Section -->
+        <section id="blog" class="blog-section">
+            <div class="container">
+                <h3>From the Blog</h3>
+                <ul class="blog-posts">
+                    <li><a href="#">The Future of Facial Recognition: Ethical AI at the Forefront</a> <span class="date">July 10, 2025</span></li>
+                    <li><a href="#">Decentralizing AI: How Federated Learning Protects Your Privacy</a> <span class="date">June 25, 2025</span></li>
+                    <li><a href="#">Understanding AI Decisions: The Importance of Explainability</a> <span class="date">June 01, 2025</span></li>
+                    <li><a href="#">Beyond Identification: New Applications of Facial Recognition</a> <span class="date">May 15, 2025</span></li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-content">
+            <p>&copy; 2025 The Aegis Project</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
