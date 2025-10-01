@@ -1,50 +1,56 @@
 import flwr as fl
-import argparse
 import torch
-import os
+from model import SimpleFaceNet
 from utils.aggregation_utils import parameters_to_state_dict
-from models.simple_facenet import SimpleFaceNet
+from flwr.common import parameters_to_ndarrays
+import shutil
 
-# Custom FedAvg that saves global model each round
-class SaveStrategy(fl.server.strategy.FedAvg):
-    def __init__(self, model_template, save_dir, **kwargs):
-        super().__init__(**kwargs)
-        self.model_template = model_template
-        self.save_dir = save_dir
-        os.makedirs(save_dir, exist_ok=True)
-
-    def aggregate_fit(self, server_round, results, failures):
-        aggregated_parameters, metrics = super().aggregate_fit(server_round, results, failures)
+# -------------------------------
+# Custom FedAvg Strategy
+# -------------------------------
+class SaveModelStrategy(fl.server.strategy.FedAvg):
+    def aggregate_fit(self, rnd, results, failures):
+        aggregated_parameters, aggregated_metrics = super().aggregate_fit(rnd, results, failures)
         if aggregated_parameters is not None:
-            state_dict = parameters_to_state_dict(self.model_template, aggregated_parameters)
-            torch.save(state_dict, os.path.join(self.save_dir, f"round-{server_round}.pt"))
-            print(f"[server] ✅ Saved global model (round {server_round})")
-        return aggregated_parameters, metrics
+            print(f"[ROUND {rnd}] Saving aggregated model...")
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--num_rounds", type=int, default=3)
-    parser.add_argument("--port", type=int, default=8081)
-    parser.add_argument("--save_dir", type=str, default="saved_models")
-    args = parser.parse_args()
+            # Convert Flower Parameters → list of ndarrays
+            ndarrays = parameters_to_ndarrays(aggregated_parameters)
 
-    model_template = SimpleFaceNet()
+            # Create model and load parameters
+            model = SimpleFaceNet()
+            state_dict = parameters_to_state_dict(ndarrays, model.state_dict())
+            model.load_state_dict(state_dict, strict=False)
 
-    strategy = SaveStrategy(
-        model_template=model_template,
-        save_dir=args.save_dir,
+            # Save model after each round
+            round_path = f"global_model_round_{rnd}.pt"
+            torch.save(model.state_dict(), round_path)
+
+            # Always update "latest" model → global_model.pt
+            shutil.copy(round_path, "global_model.pt")
+
+        return aggregated_parameters, aggregated_metrics
+
+
+# -------------------------------
+# Run Federated Server
+# -------------------------------
+if __name__ == "__main__":
+    print("🚀 Starting Federated Server...")
+
+    strategy = SaveModelStrategy(
         fraction_fit=1.0,
         fraction_evaluate=1.0,
-        min_fit_clients=1,
-        min_evaluate_clients=1,
-        min_available_clients=1,
+        min_fit_clients=2,
+        min_evaluate_clients=2,
+        min_available_clients=2,
     )
 
+    # Run server for 3 rounds
     fl.server.start_server(
-        server_address=f"0.0.0.0:{args.port}",
+        server_address="127.0.0.1:8081",
+        config=fl.server.ServerConfig(num_rounds=3),
         strategy=strategy,
-        config=fl.server.ServerConfig(num_rounds=args.num_rounds),
     )
 
-if __name__ == "__main__":
-    main()
+    print("🎉 Federated training completed successfully. ✅ global_model.pt saved")

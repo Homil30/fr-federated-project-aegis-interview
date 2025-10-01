@@ -1,43 +1,54 @@
+# model.py
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import models
-from torchvision.models import ResNet18_Weights
-
-try:
-    from facenet_pytorch import InceptionResnetV1
-    FACENET_AVAILABLE = True
-except ImportError:
-    FACENET_AVAILABLE = False
 
 
 class SimpleFaceNet(nn.Module):
-    def __init__(self, embedding_size=128, pretrained=True, backbone="resnet18"):
-        super().__init__()
+    def __init__(self, num_classes=2):
+        super(SimpleFaceNet, self).__init__()
 
-        if backbone == "resnet18":
-            # ✅ Option A: ResNet18 backbone (ImageNet pretrained)
-            weights = ResNet18_Weights.DEFAULT if pretrained else None
-            base = models.resnet18(weights=weights)
-            base.fc = nn.Identity()
-            self.backbone = base
-            feat_dim = 512
+        # Convolutional feature extractor
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),  # 112x112
 
-        elif backbone == "facenet" and FACENET_AVAILABLE:
-            # ✅ Option B: FaceNet backbone (VGGFace2 pretrained)
-            self.backbone = InceptionResnetV1(pretrained="vggface2")
-            feat_dim = 512  # InceptionResnetV1 outputs 512-dim embeddings
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),  # 56x56
 
-        else:
-            raise ValueError("Unsupported backbone. Use 'resnet18' or 'facenet'.")
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),  # 28x28
 
-        # Projection to desired embedding size
-        self.fc = nn.Linear(feat_dim, embedding_size)
+            nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),  # 14x14
+        )
+
+        # ✅ Fix: use adaptive pooling → always outputs 7x7
+        self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
+
+        # Classifier
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(256 * 7 * 7, 512),  # 12544 → 512
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(512, num_classes),
+        )
 
     def forward(self, x):
-        feat = self.backbone(x)
-        if feat.dim() > 2:  # flatten if needed
-            feat = torch.flatten(feat, 1)
-        emb = self.fc(feat)
-        emb = F.normalize(emb, p=2, dim=1)  # L2-normalize embeddings
-        return emb
+        x = self.features(x)
+        x = self.avgpool(x)  # fixed output size
+        x = self.classifier(x)
+        return x
+
+
+# ✅ Quick test (optional)
+if __name__ == "__main__":
+    model = SimpleFaceNet(num_classes=2)
+    dummy = torch.randn(4, 3, 224, 224)  # batch of 4 images
+    out = model(dummy)
+    print("Output shape:", out.shape)  # should be [4, 2]
