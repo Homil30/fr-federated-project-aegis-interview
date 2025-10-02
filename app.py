@@ -1,94 +1,94 @@
-from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
 import torch
 import torch.nn as nn
-from torchvision import transforms, models
+import torch.nn.functional as F
+from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import JSONResponse
+from torchvision import transforms
 from PIL import Image
 import io
-import json
 
-# -----------------------
-# Setup FastAPI
-# -----------------------
 app = FastAPI()
 
-# Enable CORS for frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (for local dev)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# -------------------------
+# Correct GlobalModel (matches global_model_round_3.pt)
+# -------------------------
+class GlobalModel(nn.Module):
+    def __init__(self, num_classes=2):
+        super(GlobalModel, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),  # features.0
+            nn.ReLU(inplace=True),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1), # features.3
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),# features.6
+            nn.ReLU(inplace=True),
+            nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1),# features.9
+            nn.ReLU(inplace=True),
+        )
 
-# -----------------------
+        self.classifier = nn.Sequential(
+            nn.Linear(12544, 512),  # classifier.1
+            nn.ReLU(inplace=True),
+            nn.Linear(512, num_classes),  # classifier.4
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
+
+
+# -------------------------
 # Load Model
-# -----------------------
-MODEL_PATH = "global_model.pt"  # or global_model_round_3.pt
+# -------------------------
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = GlobalModel(num_classes=2)
 
 try:
-    # Load ResNet18 backbone (because checkpoint has "features" & "classifier")
-    model = models.resnet18(pretrained=False)
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, 2)  # 2 classes (Male/Female or Known/Unknown)
-
-    # Load weights
-    state_dict = torch.load(MODEL_PATH, map_location=torch.device("cpu"))
+    state_dict = torch.load("model.pth", map_location=device)
     model.load_state_dict(state_dict)
     model.eval()
-    print("✅ Model loaded successfully!")
-
+    print("✅ GlobalModel loaded successfully!")
 except Exception as e:
     print(f"⚠️ Could not load model: {e}")
-    model = None
 
-# -----------------------
+
+# -------------------------
 # Image Preprocessing
-# -----------------------
+# -------------------------
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # ResNet standard
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225])
 ])
 
-# -----------------------
+
+# -------------------------
 # Prediction Endpoint
-# -----------------------
-@app.post("/predict/")
+# -------------------------
+@app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
-        contents = await file.read()
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
-
-        img_tensor = transform(image).unsqueeze(0)
-
-        if model is None:
-            return {"error": "Model not loaded"}
+        image_bytes = await file.read()
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        input_tensor = transform(image).unsqueeze(0).to(device)
 
         with torch.no_grad():
-            outputs = model(img_tensor)
-            _, predicted = torch.max(outputs, 1)
+            outputs = model(input_tensor)
+            probs = F.softmax(outputs, dim=1)[0]
+            pred = torch.argmax(probs).item()
+            confidence = probs[pred].item()
 
-        return {"prediction": int(predicted.item())}
-
+        return JSONResponse(content={
+            "prediction": int(pred),
+            "confidence": round(confidence, 4),
+            "probabilities": {
+                "class_0": round(probs[0].item(), 4),
+                "class_1": round(probs[1].item(), 4)
+            }
+        })
     except Exception as e:
-        return {"error": str(e)}
-
-# -----------------------
-# Evaluation Endpoint
-# -----------------------
-@app.get("/evaluation")
-def get_evaluation_results():
-    try:
-        with open("evaluation_results.json", "r") as f:
-            data = json.load(f)
-        return data
-    except Exception as e:
-        return {"error": str(e)}
-
-# -----------------------
-# Root Endpoint
-# -----------------------
-@app.get("/")
-def root():
-    return {"message": "Aegis Federated Learning API is running 🚀"}
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+    
