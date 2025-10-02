@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body id="home">
+    <!-- ✅ Header -->
     <header class="site-header">
         <div class="container header-content">
             <a href="index.html" class="logo">
@@ -24,6 +25,7 @@
                     <li><a href="#research">Research</a></li>
                     <li><a href="#demo-section">Demo</a></li>
                     <li><a href="#evaluation-section">Evaluation</a></li>
+                    <li><a href="#xai-section">XAI</a></li> <!-- ✅ Link scrolls to XAI section -->
                     <li><a href="#blog">Blog</a></li>
                     <li><a href="#contact">Contact</a></li>
                 </ul>
@@ -31,6 +33,7 @@
         </div>
     </header>
 
+    <!-- ✅ Main Content -->
     <main class="main-content">
         <!-- Hero Section -->
         <section class="hero-section homepage-hero">
@@ -113,6 +116,21 @@
             </div>
         </section>
 
+        <!-- ✅ Explainability (XAI) Section -->
+        <section id="xai-section" class="xai-section">
+            <div class="container">
+                <h2>Explainability (XAI)</h2>
+                <p>Upload an image and see how the model makes its decision using <b>Grad-CAM</b> heatmaps.</p>
+
+                <div class="upload-box">
+                    <input type="file" id="xaiFile" accept="image/*">
+                    <button onclick="uploadForExplain()" class="button button-primary">Generate Explanation</button>
+                </div>
+
+                <div id="xaiResult" class="result-box"></div>
+            </div>
+        </section>
+
         <!-- Blog Section -->
         <section id="blog" class="blog-section">
             <div class="container">
@@ -127,12 +145,14 @@
         </section>
     </main>
 
+    <!-- ✅ Footer -->
     <footer class="site-footer">
         <div class="container footer-content">
             <p>&copy; 2025 The Aegis Project</p>
         </div>
     </footer>
 
+    <!-- ✅ JS -->
     <script src="script.js"></script>
 </body>
 </html>

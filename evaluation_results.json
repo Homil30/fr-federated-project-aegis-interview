@@ -1,17 +1,16 @@
 {
   "fairness": {
-    "Male": 92,
-    "Female": 89,
-    "Other": 85
+    "Group A": 92.5,
+    "Group B": 87.3,
+    "Group C": 90.1
   },
   "robustness": {
-    "Clean": 90,
-    "FGSM": 70,
-    "PGD": 60,
-    "DeepFool": 55
+    "Clean": 95,
+    "FGSM Attack": 80,
+    "PGD Attack": 75
   },
   "performance": {
-    "Accuracy": 88,
-    "Error": 12
+    "Accuracy": 91,
+    "Error Rate": 9
   }
 }
