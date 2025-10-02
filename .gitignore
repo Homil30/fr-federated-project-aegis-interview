@@ -1,0 +1,36 @@
+# ============================
+# Python cache / temp files
+# ============================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# ============================
+# Virtual environments
+# ============================
+.venv/
+venv/
+.env/
+
+# ============================
+# Jupyter notebooks
+# ============================
+.ipynb_checkpoints
+
+# ============================
+# Data & outputs (keep local only)
+# ============================
+data/
+EVALUATION_RESULTS/
+saved_models/
+global_model.pt
+
+# ============================
+# OS / editor files
+# ============================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

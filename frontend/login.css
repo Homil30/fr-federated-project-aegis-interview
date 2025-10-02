@@ -1,0 +1,208 @@
+/* --------------------------------------------------------------------------
+ * Login Page Styles
+ * Based on the Deep Void aesthetic from homepage.css
+ * -------------------------------------------------------------------------- */
+
+/* Color Variables from the original theme */
+:root {
+    --theme-pure-black: #000000;
+    --theme-deep-dark: hsl(0, 0%, 5%);
+    --theme-dark-layer: hsl(0, 0%, 9%);
+    --text-primary-light: hsl(0, 0%, 90%);
+    --text-secondary-grey: hsl(0, 0%, 65%);
+    --accent-blue-neon: hsl(200, 100%, 60%);
+    --accent-subtle-light: hsl(210, 15%, 85%);
+    --shadow-deep: 0 6px 15px hsla(0, 0%, 0%, 0.4);
+    --shadow-text-subtle: 0 0 5px hsla(0, 0%, 100%, 0.1), 0 0 10px hsla(0, 0%, 100%, 0.05);
+    
+    /* Fonts and sizes */
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-size-base: 1em;
+    --font-size-small: 0.9em;
+    --font-size-medium: 1.15em;
+    --font-size-xl: 2em;
+    --font-size-xxl: 2.8em;
+}
+
+/* Global resets and body styling */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    color: var(--text-primary-light);
+    background-color: var(--theme-pure-black);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Main login container */
+.login-container {
+    width: 450px;
+    height: 450px;
+    background-color: var(--theme-dark-layer);
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid hsla(0, 0%, 100%, 0.1);
+    box-shadow: var(--shadow-deep);
+    text-align: center;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px hsla(0, 0%, 0%, 0.6), 0 0 20px hsla(200, 100%, 60%, 0.2);
+}
+
+/* Heading style */
+.login-container h2 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-xxl);
+    color: var(--text-primary-light);
+    margin-bottom: 30px;
+    position: relative;
+    text-shadow: none; /* Removing the text shadow for a cleaner look */
+}
+
+.login-container h2::after {
+    content: '';
+    background-color: var(--accent-subtle-light);
+    width: 60px; /* Making the line shorter */
+    height: 2px; /* Making the line thinner */
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    position: absolute;
+    border-radius: 1.5px;
+    box-shadow: none; /* Removing the glow for a cleaner look */
+}
+
+/* Form group and input styling */
+.form-group {
+    margin-bottom: 25px;
+    text-align: left;
+    width: 100%;
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-secondary-grey);
+    font-size: var(--font-size-small);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border: 1px solid hsla(0, 0%, 100%, 0.1);
+    background-color: var(--theme-deep-dark);
+    color: var(--text-primary-light);
+    font-size: var(--font-size-base);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent-blue-neon);
+    box-shadow: 0 0 10px hsla(200, 100%, 60%, 0.3); /* Subtle glow on focus */
+}
+
+.form-group input::placeholder {
+    color: var(--text-secondary-grey);
+    opacity: 0.6;
+}
+
+/* Button styling */
+.button {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.button-primary {
+    background-color: var(--accent-blue-neon);
+    color: var(--theme-pure-black);
+    box-shadow: 0 4px 12px hsla(200, 100%, 60%, 0.3); /* Softer shadow */
+}
+
+.button-primary:hover {
+    box-shadow: 0 6px 20px hsla(200, 100%, 60%, 0.5); /* A cleaner glow on hover */
+    background-color: hsl(200, 100%, 65%);
+}
+
+/* Link styling */
+.forgot-password {
+    display: block;
+    margin-top: 20px;
+    color: var(--text-secondary-grey);
+    font-size: var(--font-size-small);
+    text-decoration: none;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: var(--accent-blue-neon);
+    text-shadow: 0 0 12px hsla(200, 100%, 60%, 0.5);
+}
+
+.signup-link {
+    margin-top: 30px;
+    color: var(--text-secondary-grey);
+    font-size: var(--font-size-base);
+}
+
+.signup-link a {
+    color: var(--accent-blue-neon);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.signup-link a:hover {
+    color: hsl(200, 100%, 65%);
+    text-shadow: 0 0 15px hsla(200, 100%, 60%, 0.6);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .login-container {
+        width: 100%;
+        height: auto;
+        padding: 30px;
+    }
+
+    .form-group input {
+        padding: 12px 15px;
+    }
+
+    .login-container h2 {
+        font-size: var(--font-size-xl);
+        margin-bottom: 25px;
+    }
+
+    .button {
+        padding: 15px;
+    }
+}
