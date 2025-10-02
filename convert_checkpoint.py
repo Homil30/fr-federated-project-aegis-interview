@@ -1,14 +1,14 @@
 import torch
-from app import GlobalModel
+from model import SimpleFaceNet   # ✅ Import training model
 
-# Init model with correct architecture
-model = GlobalModel(num_classes=2)
+# Init model
+model = SimpleFaceNet(num_classes=2)
 
-# Load federated checkpoint
+# Load checkpoint (from federated training)
 checkpoint_path = "global_model_round_3.pt"
 state_dict = torch.load(checkpoint_path, map_location="cpu")
 
-# Load weights (strict=True because now it matches exactly)
+# Load into model
 model.load_state_dict(state_dict, strict=True)
 
 # Save cleaned weights for FastAPI
