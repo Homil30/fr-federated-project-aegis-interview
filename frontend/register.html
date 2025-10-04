@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Register Face — Aegis</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: #111;
+      color: #dfefff;
+      text-align: center;
+      font-family: Arial;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+    }
+    video, img {
+      border-radius: 10px;
+      background: #000;
+      transform: scaleX(-1);
+    }
+    button {
+      margin: 8px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #status {
+      margin-top: 15px;
+      color: #9ecaff;
+    }
+    input {
+      border-radius: 6px;
+      padding: 6px;
+      text-align: center;
+      margin-bottom: 12px;
+      width: 250px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Register Your Face</h2>
+    <p>Capture your face to register as a new candidate.</p>
+
+    <input id="candidateId" placeholder="Enter candidate ID (e.g., homil)">
+    <div id="preview" style="margin-top:20px;"></div>
+
+    <div>
+      <button id="startBtn" style="background:#fff;">Start Camera</button>
+      <button id="captureBtn" style="background:#2196f3; color:white;">Capture</button>
+      <button id="submitBtn" style="background:#4caf50; color:white;">Submit</button>
+    </div>
+
+    <div id="status">Status: Waiting...</div>
+  </div>
+
+  <script src="register.js"></script>
+</body>
+</html>
