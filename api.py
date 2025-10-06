@@ -12,6 +12,8 @@ import base64
 import numpy as np
 import cv2
 import matplotlib.cm as cm
+import tempfile
+import shutil
 
 # -------------------
 # Optional: FER import
@@ -199,7 +201,7 @@ async def register_candidate(candidate_id: str = Form(...), file: UploadFile = F
         raise HTTPException(status_code=500, detail=str(e))
 
 # -------------------------------------------------------
-# ✅ FIXED ANALYZE FUNCTION — old logic + FER retry
+# ✅ Analyze Interview Frame (LIVE)
 # -------------------------------------------------------
 @app.post("/interview/analyze")
 async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Form(None)):
@@ -217,13 +219,12 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
         emotion_confidence = 0.0
         detection_method = "none"
 
-        # ✅ Try FER (mtcnn=True first)
+        # ✅ Try FER (mtcnn=True)
         if FER_AVAILABLE and detector is not None:
             try:
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 fer_results = detector.detect_emotions(frame_rgb)
                 if not fer_results:
-                    print("⚠️ No faces found with MTCNN=True, retrying with mtcnn=False ...")
                     fallback_detector = FER(mtcnn=False)
                     fer_results = fallback_detector.detect_emotions(frame_rgb)
                 if fer_results:
@@ -232,7 +233,6 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
                     (emotion_label, emotion_confidence) = max(fer_results[0]["emotions"].items(), key=lambda kv: kv[1])
                     x, y, w, h = map(int, [x, y, w, h])
                     face_crop = frame[y:y + h, x:x + w]
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                     detection_method = "FER"
                     print(f"✅ FER detected face ({emotion_label}={emotion_confidence:.2f})")
             except Exception as e:
@@ -242,11 +242,10 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
         if face_crop is None:
             try:
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                faces = haar_face.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=3, minSize=(40, 40))
+                faces = haar_face.detectMultiScale(gray, 1.05, 3, minSize=(40, 40))
                 if len(faces) > 0:
                     x, y, w, h = faces[0]
                     face_crop = frame[y:y + h, x:x + w]
-                    cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
                     detection_method = "Haar"
                     print("✅ Haar detected face")
             except Exception as e:
@@ -257,21 +256,9 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
             h, w = frame.shape[:2]
             cx, cy = w // 2, h // 2
             size = min(h, w) // 2
-            x1, y1 = max(0, cx - size), max(0, cy - size)
-            x2, y2 = min(w, cx + size), min(h, cy + size)
-            face_crop = frame[y1:y2, x1:x2]
+            face_crop = frame[cy - size//2:cy + size//2, cx - size//2:cx + size//2]
             detection_method = "center_crop"
             print("⚠️ Using center crop fallback")
-
-        # Save frame for debugging
-        cv2.imwrite(f"debug_frames/frame_{int(time.time())}.jpg", frame)
-
-        # ✅ No valid face found
-        if face_crop is None or face_crop.size == 0:
-            print("❌ No valid face crop found")
-            return {"status": "no_face", "identity_confidence": 0.0, "emotion": "Unknown",
-                    "emotion_confidence": 0.0, "engagement_score": 0.0, "eye_score": 0.0,
-                    "mouth_score": 0.0, "summary": 0.0}
 
         # ✅ Engagement analysis
         gray_face = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
@@ -284,30 +271,22 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
         eye_edges = cv2.Canny(eye_region, 40, 120)
         mouth_edges = cv2.Canny(mouth_region, 40, 120)
 
-        eye_density = np.sum(eye_edges) / max(1, eye_region.size)
-        mouth_density = np.sum(mouth_edges) / max(1, mouth_region.size)
-        eye_score = round(min(1.0, eye_density * 30), 3)
-        mouth_score = round(min(1.0, mouth_density * 25), 3)
-
-        if emotion_confidence < 0.05:
-            emotion_confidence = round(min(1.0, edge_density * 25), 3)
+        eye_score = round(min(1.0, np.sum(eye_edges) / max(1, eye_region.size) * 30), 3)
+        mouth_score = round(min(1.0, np.sum(mouth_edges) / max(1, mouth_region.size) * 25), 3)
+        emotion_confidence = round(min(1.0, edge_density * 25), 3)
 
         # ✅ Identity verification
         identity_confidence = 0.0
         if candidate_id:
             emb_path = f"embeddings/{candidate_id}.pt"
             if os.path.exists(emb_path):
-                try:
-                    _, tensor_x = read_image(data)
-                    with torch.no_grad():
-                        emb_curr = model(tensor_x)
-                        stored_emb = torch.load(emb_path, map_location=device).to(device)
-                        sim = float(pairwise_cosine(emb_curr, stored_emb).item())
-                        identity_confidence = round(max(0.0, min(1.0, sim)), 3)
-                except Exception as e:
-                    print(f"⚠️ Identity check error: {e}")
+                _, tensor_x = read_image(data)
+                with torch.no_grad():
+                    emb_curr = model(tensor_x)
+                    stored_emb = torch.load(emb_path, map_location=device).to(device)
+                    sim = float(pairwise_cosine(emb_curr, stored_emb).item())
+                    identity_confidence = round(max(0.0, min(1.0, sim)), 3)
 
-        # ✅ Final results
         engagement_score = round(0.4 * emotion_confidence + 0.35 * eye_score + 0.25 * mouth_score, 3)
         summary = round((identity_confidence + engagement_score) / 2, 3) if candidate_id else engagement_score
 
@@ -328,3 +307,92 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
         import traceback
         print("❌ Analyze Error:", traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Interview Analysis Error: {str(e)}")
+
+# -------------------------------------------------------
+# 🎥 Analyze Full Recorded Video (Option 2)
+# -------------------------------------------------------
+@app.post("/interview/analyze_video")
+async def analyze_video(file: UploadFile = File(...), candidate_id: str = Form(None)):
+    """
+    📹 Analyze a recorded video (.mp4)
+    Extracts frames every 1s and reuses analyze_interview logic
+    """
+    import time
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+            shutil.copyfileobj(file.file, tmp)
+            video_path = tmp.name
+
+        print(f"🎥 Processing uploaded video: {video_path}")
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            raise HTTPException(status_code=400, detail="Invalid video file")
+
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        duration = total / fps if fps else 0
+        frame_skip = int(fps) if fps > 0 else 1
+        results = []
+        idx = 0
+
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            if idx % frame_skip != 0:
+                idx += 1
+                continue
+            idx += 1
+            print(f"🖼 Analyzing frame {idx}/{total}")
+            _, buf = cv2.imencode(".jpg", frame)
+            img_stream = io.BytesIO(buf.tobytes())
+
+            try:
+                res = await analyze_interview(
+                    file=UploadFile(filename=f"frame_{idx}.jpg", file=img_stream),
+                    candidate_id=candidate_id
+                )
+                results.append(res)
+            except Exception as e:
+                print(f"⚠️ Frame {idx} skipped: {e}")
+
+        cap.release()
+        os.remove(video_path)
+
+        if not results:
+            raise HTTPException(status_code=400, detail="No valid frames processed")
+
+        avg_identity = np.mean([r["identity_confidence"] for r in results])
+        avg_engagement = np.mean([r["engagement_score"] for r in results])
+        avg_eye = np.mean([r["eye_score"] for r in results])
+        avg_mouth = np.mean([r["mouth_score"] for r in results])
+
+        verdict = (
+            "🌟 Excellent engagement & recognition" if avg_identity > 0.8 and avg_engagement > 0.7
+            else "🙂 Good effort" if avg_identity > 0.6 and avg_engagement > 0.5
+            else "⚠️ Low engagement or mismatch"
+        )
+
+        print(f"📊 Video Summary → ID={avg_identity:.3f}, ENG={avg_engagement:.3f}, Verdict={verdict}")
+
+        return {
+            "status": "ok",
+            "video_info": {
+                "duration_sec": round(duration, 2),
+                "fps": round(fps, 2),
+                "frames_analyzed": len(results)
+            },
+            "average_scores": {
+                "identity_confidence": round(float(avg_identity), 3),
+                "engagement_score": round(float(avg_engagement), 3),
+                "eye_score": round(float(avg_eye), 3),
+                "mouth_score": round(float(avg_mouth), 3),
+            },
+            "verdict": verdict,
+            "per_frame_results": results[:10]
+        }
+
+    except Exception as e:
+        import traceback
+        print("❌ Video Analyze Error:", traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Video Analyze Error: {str(e)}")

@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const confCanvas = document.getElementById('confChart');
   const engCanvas = document.getElementById('engChart');
 
-  // ✅ New live elements
+  // ✅ Live metric elements
+  const timeVal = document.getElementById("timeVal");
   const idVal = document.getElementById("identityVal");
   const engVal = document.getElementById("engagementVal");
   const eyeVal = document.getElementById("eyeVal");
@@ -97,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       chart.data.labels.shift();
       chart.data.datasets[0].data.shift();
     }
-    chart.update();
+    chart.update('none');
   }
 
   // ---------- Helper: Convert Data URL to Blob ----------
@@ -119,14 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         video: { width: 640, height: 480 }
       });
       video.srcObject = stream;
-
-      await new Promise((resolve, reject) => {
-        video.onloadedmetadata = () => {
-          video.play().then(resolve).catch(reject);
-        };
-        setTimeout(() => reject(new Error("Webcam timeout")), 5000);
-      });
-
+      await video.play();
       console.log("✅ Webcam started successfully");
     } catch (err) {
       console.error("❌ Webcam error:", err);
@@ -195,10 +189,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       console.log(`✅ Parsed: ID=${id}, ENG=${eng}, EYE=${eye}, MOUTH=${mouth}, EMO=${emo}`);
 
+      // ✅ Push to arrays
+      identityScores.push(id);
+      engagementScores.push(eng);
+      eyeScores.push(eye);
+      mouthScores.push(mouth);
+
+      // ✅ Update charts
       addPoint(confChart, t, id);
       addPoint(engChart, t, eng);
 
       // ✅ Update live UI
+      if (timeVal) timeVal.innerText = t;
       if (idVal) idVal.innerText = id.toFixed(2);
       if (engVal) engVal.innerText = eng.toFixed(2);
       if (eyeVal) eyeVal.innerText = eye.toFixed(2);
@@ -212,9 +214,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (logBox)
-        logBox.innerHTML += `<div>⏰ ${t} → ENG=${eng.toFixed(2)}, EMO=${emo}</div>`;
+        logBox.innerHTML += `<div>⏰ ${t} → ID=${id.toFixed(2)}, ENG=${eng.toFixed(2)}, EMO=${emo}</div>`;
 
-      // Insight summary
+      // ✅ Insight summary
       let insight = `Emotion: ${emo}\n`;
       if (id > 0.8) insight += "✅ Verified | ";
       else if (id > 0.4) insight += "⚠️ Partial match | ";
