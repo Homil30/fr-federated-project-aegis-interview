@@ -8,3 +8,17 @@ scikit-learn>=1.3.0
 scipy>=1.11.0
 tqdm>=4.66.0
 adversarial-robustness-toolbox>=1.20.0
+fastapi
+uvicorn
+torch==2.2.2
+torchvision
+facenet-pytorch==2.5.3
+fer==22.5.1
+moviepy==2.2.1
+opencv-python-headless==4.12.0.88
+matplotlib==3.10.6
+numpy==1.26.4
+pandas==2.3.3
+tqdm
+Pillow==11.3.0
+python-dotenv==1.1.1

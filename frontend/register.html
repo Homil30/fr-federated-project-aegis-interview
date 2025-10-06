@@ -2,57 +2,215 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Register Face — Aegis</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Register Face — Facial Recognition Interview System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+
   <style>
+    /* ✅ Global Page Styling */
     body {
-      background: #111;
+      background: linear-gradient(to bottom, #010a13, #000);
       color: #dfefff;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    /* ✅ Register Card */
+    .register-card {
+      background: rgba(0, 10, 20, 0.9);
+      border: 1px solid rgba(0, 191, 255, 0.2);
+      border-radius: 16px;
+      padding: 40px;
+      width: 360px;
       text-align: center;
-      font-family: Arial;
+      box-shadow: 0 0 25px rgba(0, 191, 255, 0.15);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
+
+    .register-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 35px rgba(0, 191, 255, 0.25);
     }
-    video, img {
-      border-radius: 10px;
-      background: #000;
-      transform: scaleX(-1);
+
+    /* ✅ Header */
+    .register-header {
+      text-align: center;
+      margin-bottom: 25px;
     }
+
+    .register-header i {
+      color: #00bfff;
+      font-size: 1.7em;
+      margin-right: 8px;
+    }
+
+    .register-header h2 {
+      display: inline-block;
+      font-size: 1.6em;
+      color: #00bfff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      margin: 0;
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(0, 191, 255, 0.7);
+    }
+
+    .header-underline {
+      width: 90px;
+      height: 3px;
+      background: #00bfff;
+      border-radius: 2px;
+      margin: 12px auto;
+      box-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
+    }
+
+    .register-header p {
+      font-size: 0.95em;
+      color: #b8dfff;
+      margin-top: 10px;
+      line-height: 1.6em;
+    }
+
+    /* ✅ Input */
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 191, 255, 0.25);
+      background: rgba(0, 0, 0, 0.4);
+      color: #dfefff;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+      outline: none;
+      font-size: 1em;
+      transition: 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #00bfff;
+      box-shadow: 0 0 8px rgba(0, 191, 255, 0.5);
+    }
+
+    /* ✅ Buttons */
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
     button {
-      margin: 8px;
-      padding: 8px 14px;
       border: none;
       border-radius: 6px;
+      padding: 8px 14px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
+
+    .btn-camera {
+      background: rgba(255, 255, 255, 0.08);
+      color: #b8dfff;
+    }
+
+    .btn-capture {
+      background: #00bfff;
+      color: #000;
+      box-shadow: 0 0 12px rgba(0, 191, 255, 0.4);
+    }
+
+    .btn-submit {
+      background: #28a745;
+      color: #fff;
+    }
+
+    .btn-camera:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #00bfff;
+    }
+
+    .btn-capture:hover {
+      background: #00a6e6;
+      box-shadow: 0 0 18px rgba(0, 191, 255, 0.7);
+    }
+
+    .btn-submit:hover {
+      background: #218838;
+    }
+
+    /* ✅ Verification Box */
+    .verification-box {
+      margin-top: 25px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 191, 255, 0.2);
+    }
+
+    .verification-box p {
+      font-size: 0.9em;
+      color: #b8dfff;
+      margin-bottom: 15px;
+    }
+
+    .verify-btn {
+      display: inline-block;
+      background: linear-gradient(90deg, #007bff, #00bfff);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+    }
+
+    .verify-btn:hover {
+      background: linear-gradient(90deg, #00a6e6, #00cfff);
+      transform: scale(1.05);
+    }
+
+    #preview video,
+    #preview img {
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
     #status {
       margin-top: 15px;
-      color: #9ecaff;
-    }
-    input {
-      border-radius: 6px;
-      padding: 6px;
-      text-align: center;
-      margin-bottom: 12px;
-      width: 250px;
+      font-size: 0.9em;
+      color: #b8dfff;
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>Register Your Face</h2>
-    <p>Capture your face to register as a new candidate.</p>
+  <div class="register-card">
+    <div class="register-header">
+      <div style="display: flex; justify-content: center; align-items: center;">
+        <i class="fas fa-user-plus"></i>
+        <h2>Register Your Face</h2>
+      </div>
+      <div class="header-underline"></div>
+      <p>Capture your face securely to register as a new candidate.</p>
+    </div>
 
-    <input id="candidateId" placeholder="Enter candidate ID (e.g., homil)">
-    <div id="preview" style="margin-top:20px;"></div>
+    <input id="candidateId" placeholder="Enter Candidate ID (e.g., homil)" />
+    <div id="preview"></div>
 
-    <div>
-      <button id="startBtn" style="background:#fff;">Start Camera</button>
-      <button id="captureBtn" style="background:#2196f3; color:white;">Capture</button>
-      <button id="submitBtn" style="background:#4caf50; color:white;">Submit</button>
+    <div class="buttons">
+      <button id="startBtn" class="btn-camera">📷 Start Camera</button>
+      <button id="captureBtn" class="btn-capture">📸 Capture</button>
+      <button id="submitBtn" class="btn-submit">✔ Submit</button>
     </div>
 
     <div id="status">Status: Waiting...</div>

@@ -1,78 +1,241 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Interview Analysis — Aegis</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Interview Analysis — Facial Recognition Interview System</title>
+
+  <!-- ✅ Load Chart.js FIRST -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    body { 
-      font-family: Arial; 
-      background: #111; 
-      color: #dfefff; 
-      text-align: center; 
-      margin: 0; 
-      padding: 0;
+    /* 🌌 Global Theme */
+    body {
+      background: linear-gradient(to bottom, #010a13, #000);
+      color: #dfefff;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
     }
-    .container { 
-      max-width: 1100px; 
-      margin: 40px auto; 
+
+    .interview-card {
+      background: rgba(0, 10, 20, 0.85);
+      border: 1px solid rgba(0, 191, 255, 0.2);
+      border-radius: 18px;
+      padding: 40px 50px;
+      width: 950px;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(0, 191, 255, 0.25);
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    #webcam { 
-      border-radius: 12px; 
-      background: #000; 
-      margin-top: 20px; 
+
+    .header {
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    .header .title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .header i {
+      color: #00bfff;
+      font-size: 1.6em;
+      text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
+    }
+
+    .header h2 {
+      color: #00bfff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.6em;
+      margin: 0;
+      text-shadow: 0 0 12px rgba(0, 191, 255, 0.7);
+    }
+
+    .header-underline {
+      width: 140px;
+      height: 3px;
+      background: #00bfff;
+      border-radius: 2px;
+      margin: 10px auto 15px;
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.7);
+    }
+
+    video {
+      border-radius: 12px;
+      background: #000;
+      margin-top: 10px;
       transform: scaleX(-1);
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.25);
     }
-    #controls { margin-top: 12px; }
-    #latest { 
-      margin-top: 14px; 
-      color: #9ecaff; 
-      text-align: left; 
-      display: inline-block; 
-      padding: 10px; 
-      border-radius: 8px; 
-      background: rgba(0, 0, 0, 0.5); 
-      font-size: 14px;
+
+    #controls {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
     }
+
+    input {
+      background: rgba(0, 10, 20, 0.8);
+      border: 1px solid rgba(0, 191, 255, 0.3);
+      color: #dfefff;
+      padding: 10px 12px;
+      border-radius: 8px;
+      width: 220px;
+      text-align: center;
+      font-size: 0.95em;
+      box-shadow: 0 0 8px rgba(0, 191, 255, 0.2);
+    }
+
     button {
-      margin: 5px;
-      padding: 8px 16px;
       border: none;
       border-radius: 6px;
+      padding: 8px 16px;
       cursor: pointer;
-      color: white;
-      background: #0078ff;
-    }
-    button:hover { background: #0099ff; }
-    input {
-      background: #222;
-      border: 1px solid #555;
+      font-weight: 600;
+      font-size: 0.9em;
       color: #fff;
-      padding: 6px 10px;
-      border-radius: 6px;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    #btnStart {
+      background: linear-gradient(90deg, #007bff, #00bfff);
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+    }
+
+    #btnStop {
+      background: linear-gradient(90deg, #e63946, #ff5a5f);
+      box-shadow: 0 0 12px rgba(255, 90, 90, 0.4);
+    }
+
+    #btnSubmit {
+      background: linear-gradient(90deg, #28a745, #34d058);
+      box-shadow: 0 0 12px rgba(40, 167, 69, 0.5);
+    }
+
+    .charts {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 35px;
+    }
+
+    canvas {
+      background: rgba(0, 10, 20, 0.7);
+      border: 1px solid rgba(0, 191, 255, 0.2);
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.15);
+    }
+
+    #latest {
+      margin-top: 35px;
+      color: #b8dfff;
+      font-size: 0.95em;
+      background: rgba(0, 15, 25, 0.6);
+      display: inline-block;
+      padding: 18px 22px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
+      text-align: left;
+      line-height: 1.7em;
+      width: 360px;
+    }
+
+    .insight {
+      font-style: italic;
+      color: #00bfff;
+      text-align: center;
+      margin-top: 6px;
+      text-shadow: 0 0 8px rgba(0, 191, 255, 0.6);
+    }
+
+    #summaryBox {
+      display: none;
+      background: rgba(0, 10, 20, 0.6);
+      padding: 20px;
+      margin-top: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
+      text-align: left;
+      width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.8em;
+      animation: fadeIn 0.8s ease;
+    }
+
+    #summaryBox h3 {
+      color: #00bfff;
+      text-align: center;
+      text-shadow: 0 0 12px rgba(0, 191, 255, 0.7);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>Interview Analysis (Live)</h2>
+  <div class="interview-card">
+    <div class="header">
+      <div class="title">
+        <i class="fas fa-video"></i>
+        <h2>Interview Analysis (Live)</h2>
+      </div>
+      <div class="header-underline"></div>
+    </div>
+
     <video id="webcam" autoplay playsinline width="480" height="360"></video>
 
     <div id="controls">
       <button id="btnStart">Start</button>
       <button id="btnStop">Stop</button>
-      <input id="candidateId" placeholder="candidate_id (optional)">
+      <input id="candidateId" placeholder="Candidate ID (optional)">
+      <button id="btnSubmit">Finish Interview</button>
     </div>
 
-    <div style="display:flex; justify-content:center; gap:30px; margin-top:20px;">
+    <!-- ✅ Chart IDs match interview.js -->
+    <div class="charts">
       <canvas id="confChart" width="350" height="220"></canvas>
       <canvas id="engChart" width="350" height="220"></canvas>
     </div>
 
-    <div id="latest">No data yet</div>
+    <!-- ✅ Output fields now have correct IDs -->
+    <div id="latest">
+      <div>🕒 <b>Time:</b> <span id="dataTime">--:--:--</span></div>
+      <div>🧠 <b>Identity Confidence:</b> <span id="dataIdentity">--</span></div>
+      <div>💬 <b>Engagement:</b> <span id="dataEngagement">--</span></div>
+      <div>👁 <b>Eye:</b> <span id="dataEye">--</span> &nbsp;&nbsp; 👄 <b>Mouth:</b> <span id="dataMouth">--</span></div>
+      <div>😊 <b>Emotion:</b> <span id="emotionVal">--</span></div>
+      <hr>
+      <div class="insight" id="insightMsg">Awaiting live feed...</div>
+    </div>
+
+    <div id="summaryBox">
+      <h3>📊 Interview Summary</h3>
+      <p><b>Average Identity:</b> <span id="avgIdentity">–</span></p>
+      <p><b>Average Engagement:</b> <span id="avgEngagement">–</span></p>
+      <p><b>Average Eye Score:</b> <span id="avgEye">–</span></p>
+      <p><b>Average Mouth Score:</b> <span id="avgMouth">–</span></p>
+      <p><b>Performance Verdict:</b> <span id="verdict">–</span></p>
+    </div>
   </div>
 
-  <script src="interview.js"></script>
+  <!-- ✅ JS runs after DOM is ready -->
+  <script src="interview.js" defer></script>
 </body>
 </html>
