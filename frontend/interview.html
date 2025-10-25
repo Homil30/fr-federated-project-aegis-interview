@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <title>Interview Analysis — Facial Recognition Interview System</title>
 
-  <!-- ✅ Load Chart.js FIRST -->
+  <!-- Load Chart.js FIRST -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* 🌌 Global Theme */
+    /* Global Theme */
     body {
       background: linear-gradient(to bottom, #010a13, #000);
       color: #dfefff;
@@ -17,8 +17,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
+      padding: 20px;
     }
 
     .interview-card {
@@ -83,6 +84,7 @@
       justify-content: center;
       align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     input {
@@ -109,6 +111,16 @@
       text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
     }
 
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 191, 255, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     #btnStart {
       background: linear-gradient(90deg, #007bff, #00bfff);
       box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
@@ -129,6 +141,13 @@
       justify-content: center;
       gap: 40px;
       margin-top: 35px;
+      flex-wrap: wrap;
+    }
+
+    .chart-container {
+      flex: 1;
+      min-width: 350px;
+      max-width: 400px;
     }
 
     canvas {
@@ -150,24 +169,30 @@
       box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
       text-align: left;
       line-height: 1.7em;
-      width: 360px;
+      min-width: 360px;
+    }
+
+    #latest > div {
+      margin: 8px 0;
     }
 
     .insight {
       font-style: italic;
       color: #00bfff;
       text-align: center;
-      margin-top: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0, 191, 255, 0.2);
       text-shadow: 0 0 8px rgba(0, 191, 255, 0.6);
     }
 
     #summaryBox {
       display: none;
       background: rgba(0, 10, 20, 0.6);
-      padding: 20px;
-      margin-top: 25px;
+      padding: 30px;
+      margin-top: 35px;
       border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
+      box-shadow: 0 0 15px rgba(0, 191, 255, 0.3);
       text-align: left;
       width: 80%;
       margin-left: auto;
@@ -180,11 +205,50 @@
       color: #00bfff;
       text-align: center;
       text-shadow: 0 0 12px rgba(0, 191, 255, 0.7);
+      margin-top: 0;
+    }
+
+    #summaryBox p {
+      margin: 12px 0;
+      font-size: 1.05em;
+    }
+
+    #summaryBox b {
+      color: #00bfff;
+      min-width: 200px;
+      display: inline-block;
+    }
+
+    #summaryBox span {
+      color: #dfefff;
+      font-weight: 600;
     }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .interview-card {
+        width: 95%;
+        padding: 30px 20px;
+      }
+      
+      video {
+        width: 100%;
+        height: auto;
+      }
+
+      .charts {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      #latest {
+        min-width: auto;
+        width: 90%;
+      }
     }
   </style>
 </head>
@@ -208,25 +272,30 @@
       <button id="btnSubmit">Finish Interview</button>
     </div>
 
-    <!-- ✅ Chart IDs match interview.js -->
+    <!-- Charts Section -->
     <div class="charts">
-      <canvas id="confChart" width="350" height="220"></canvas>
-      <canvas id="engChart" width="350" height="220"></canvas>
+      <div class="chart-container">
+        <canvas id="confChart" width="350" height="220"></canvas>
+      </div>
+      <div class="chart-container">
+        <canvas id="engChart" width="350" height="220"></canvas>
+      </div>
     </div>
 
-    <!-- ✅ Output fields now have correct IDs -->
+    <!-- Live Metrics Display -->
     <div id="latest">
-      <div>🕒 <b>Time:</b> <span id="dataTime">--:--:--</span></div>
-      <div>🧠 <b>Identity Confidence:</b> <span id="dataIdentity">--</span></div>
-      <div>💬 <b>Engagement:</b> <span id="dataEngagement">--</span></div>
-      <div>👁 <b>Eye:</b> <span id="dataEye">--</span> &nbsp;&nbsp; 👄 <b>Mouth:</b> <span id="dataMouth">--</span></div>
-      <div>😊 <b>Emotion:</b> <span id="emotionVal">--</span></div>
-      <hr>
+      <div><b>Time:</b> <span id="dataTime">--:--:--</span></div>
+      <div><b>Identity Confidence:</b> <span id="dataIdentity">--</span></div>
+      <div><b>Engagement:</b> <span id="dataEngagement">--</span></div>
+      <div><b>Eye:</b> <span id="dataEye">--</span> &nbsp;&nbsp; <b>Mouth:</b> <span id="dataMouth">--</span></div>
+      <div><b>Emotion:</b> <span id="emotionVal">--</span></div>
+      <hr style="border: none; border-top: 1px solid rgba(0, 191, 255, 0.2); margin: 12px 0;">
       <div class="insight" id="insightMsg">Awaiting live feed...</div>
     </div>
 
+    <!-- Summary Box (shown after finishing) -->
     <div id="summaryBox">
-      <h3>📊 Interview Summary</h3>
+      <h3>Interview Summary</h3>
       <p><b>Average Identity:</b> <span id="avgIdentity">–</span></p>
       <p><b>Average Engagement:</b> <span id="avgEngagement">–</span></p>
       <p><b>Average Eye Score:</b> <span id="avgEye">–</span></p>
@@ -235,7 +304,7 @@
     </div>
   </div>
 
-  <!-- ✅ JS runs after DOM is ready -->
-  <script src="interview.js" defer></script>
+  <!-- Load the JavaScript -->
+  <script src="interview.js"></script>
 </body>
 </html>

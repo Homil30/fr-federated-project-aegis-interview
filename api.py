@@ -219,7 +219,7 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
         emotion_confidence = 0.0
         detection_method = "none"
 
-        # ✅ Try FER (mtcnn=True)
+        # Try FER (mtcnn=True)
         if FER_AVAILABLE and detector is not None:
             try:
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -238,7 +238,7 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
             except Exception as e:
                 print(f"⚠️ FER failed: {e}")
 
-        # ✅ Haar fallback
+        # Haar fallback
         if face_crop is None:
             try:
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -251,7 +251,7 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
             except Exception as e:
                 print(f"⚠️ Haar failed: {e}")
 
-        # ✅ Center crop fallback
+        # Center crop fallback
         if face_crop is None:
             h, w = frame.shape[:2]
             cx, cy = w // 2, h // 2
@@ -260,10 +260,15 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
             detection_method = "center_crop"
             print("⚠️ Using center crop fallback")
 
-        # ✅ Engagement analysis
+        # ✅ IMPROVED ENGAGEMENT ANALYSIS (ONLY CHANGE)
         gray_face = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray_face, 40, 120)
         edge_density = np.sum(edges) / (gray_face.shape[0] * gray_face.shape[1])
+
+        # Dynamic normalization - makes engagement respond to brightness + motion
+        brightness = np.mean(gray_face) / 255.0
+        activity = np.std(gray_face) / 100.0
+        edge_factor = min(1.0, (edge_density * 25) + activity)
 
         h = gray_face.shape[0]
         eye_region = gray_face[: int(h * 0.4), :]
@@ -271,11 +276,20 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
         eye_edges = cv2.Canny(eye_region, 40, 120)
         mouth_edges = cv2.Canny(mouth_region, 40, 120)
 
-        eye_score = round(min(1.0, np.sum(eye_edges) / max(1, eye_region.size) * 30), 3)
-        mouth_score = round(min(1.0, np.sum(mouth_edges) / max(1, mouth_region.size) * 25), 3)
-        emotion_confidence = round(min(1.0, edge_density * 25), 3)
+        eye_density = np.sum(eye_edges) / max(1, eye_region.size)
+        mouth_density = np.sum(mouth_edges) / max(1, mouth_region.size)
 
-        # ✅ Identity verification
+        # Realistic movement - combine edges, brightness, and activity
+        eye_score = round(min(1.0, (eye_density * 25) + (brightness * 0.2)), 3)
+        mouth_score = round(min(1.0, (mouth_density * 20) + (activity * 0.3)), 3)
+
+        # Combine all signals for final engagement value
+        engagement_score = round(min(1.0, (edge_factor * 0.4) + (eye_score * 0.3) + (mouth_score * 0.3)), 3)
+
+        # Emotion confidence still depends on face edge complexity
+        emotion_confidence = round(min(1.0, (edge_density * 25) + (activity * 0.5)), 3)
+
+        # Identity verification
         identity_confidence = 0.0
         if candidate_id:
             emb_path = f"embeddings/{candidate_id}.pt"
@@ -287,7 +301,6 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
                     sim = float(pairwise_cosine(emb_curr, stored_emb).item())
                     identity_confidence = round(max(0.0, min(1.0, sim)), 3)
 
-        engagement_score = round(0.4 * emotion_confidence + 0.35 * eye_score + 0.25 * mouth_score, 3)
         summary = round((identity_confidence + engagement_score) / 2, 3) if candidate_id else engagement_score
 
         print(f"📊 Detection: {detection_method} | ID: {identity_confidence} | Eng: {engagement_score}")
@@ -309,14 +322,10 @@ async def analyze_interview(file: UploadFile = File(...), candidate_id: str = Fo
         raise HTTPException(status_code=500, detail=f"Interview Analysis Error: {str(e)}")
 
 # -------------------------------------------------------
-# 🎥 Analyze Full Recorded Video (Option 2)
+# Analyze Full Recorded Video
 # -------------------------------------------------------
 @app.post("/interview/analyze_video")
 async def analyze_video(file: UploadFile = File(...), candidate_id: str = Form(None)):
-    """
-    📹 Analyze a recorded video (.mp4)
-    Extracts frames every 1s and reuses analyze_interview logic
-    """
     import time
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
@@ -368,9 +377,9 @@ async def analyze_video(file: UploadFile = File(...), candidate_id: str = Form(N
         avg_mouth = np.mean([r["mouth_score"] for r in results])
 
         verdict = (
-            "🌟 Excellent engagement & recognition" if avg_identity > 0.8 and avg_engagement > 0.7
-            else "🙂 Good effort" if avg_identity > 0.6 and avg_engagement > 0.5
-            else "⚠️ Low engagement or mismatch"
+            "Excellent engagement & recognition" if avg_identity > 0.8 and avg_engagement > 0.7
+            else "Good effort" if avg_identity > 0.6 and avg_engagement > 0.5
+            else "Low engagement or mismatch"
         )
 
         print(f"📊 Video Summary → ID={avg_identity:.3f}, ENG={avg_engagement:.3f}, Verdict={verdict}")
